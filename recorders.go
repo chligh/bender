@@ -56,7 +56,7 @@ func NewHistogramRecorder(h *hist.Histogram) Recorder {
 		case *EndRequestEvent:
 			elapsed := int(msg.End - msg.Start)
 			if msg.Err == nil {
-				h.Add(elapsed)
+				h.AddSuccess(elapsed)
 			} else {
 				h.AddError(elapsed)
 			}

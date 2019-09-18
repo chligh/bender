@@ -53,7 +53,7 @@ func (h *Histogram) End(t int) {
 }
 
 // Add adds a new value to the histogram.
-func (h *Histogram) Add(v int) {
+func (h *Histogram) Add(v int) int {
 	v = int(float64(v) / float64(h.scale))
 	if v < 1 {
 		h.values[0]++
@@ -63,11 +63,18 @@ func (h *Histogram) Add(v int) {
 		h.values[v]++
 	}
 
+	h.n++
+	h.total += v
+	return v
+}
+
+// AddSuccess adds a new success value to the histogram.
+func (h *Histogram) AddSuccess(v int) {
+	v = h.Add(v)
+
 	if v >= h.maxDelay{
 		h.delay++
 	}
-	h.n++
-	h.total += v
 }
 
 // AddError adds a new error value to the histogram.
