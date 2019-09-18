@@ -25,19 +25,21 @@ import (
 
 // Histogram defines a histogram.
 type Histogram struct {
-	start  int
-	end    int
-	scale  int
-	max    int
-	n      int
-	errCnt int
-	total  int
-	values []int
+	start  		int
+	end    		int
+	scale  		int
+	max    		int
+	delay     	int
+	maxDelay  	int
+	n      		int
+	errCnt 		int
+	total  		int
+	values 		[]int
 }
 
 // NewHistogram creates a new Histogram.
-func NewHistogram(max int, scale int) *Histogram {
-	return &Histogram{0, 0, scale, max, 0, 0, 0, make([]int, max+1)}
+func NewHistogram(max int, maxDelay int, scale int) *Histogram {
+	return &Histogram{0, 0, scale, max, 0, maxDelay, 0, 0, 0, make([]int, max+1)}
 }
 
 // Start starts the histogram with the given value.
@@ -59,6 +61,10 @@ func (h *Histogram) Add(v int) {
 		h.values[h.max]++
 	} else {
 		h.values[v]++
+	}
+
+	if v >= h.maxDelay{
+		h.delay++
 	}
 	h.n++
 	h.total += v
@@ -103,8 +109,8 @@ func (h *Histogram) Average() float64 {
 }
 
 // ErrorPercent returns the hisogram's error percentage.
-func (h *Histogram) ErrorPercent() float64 {
-	return float64(h.errCnt) / float64(h.n) * 100.0
+func (h *Histogram) SuccessPercent() float64 {
+	return float64(h.n - h.errCnt - h.delay) / float64(h.n) * 100.0
 }
 
 func (h *Histogram) String() string {
@@ -123,10 +129,11 @@ func (h *Histogram) String() string {
 		" Elapsed Time (sec): %.4f\n" +
 		" Average QPS: %.2f\n" +
 		" Errors: %d\n" +
-		" Percent errors: %.2f\n"
+		" Delays: %d\n" +
+		" Percent success: %.2f\n"
 	elapsedSecs := float64(h.end-h.start) / float64(time.Second)
 	averageQPS := float64(h.n) / elapsedSecs
 	scale := time.Duration(h.scale) * time.Nanosecond
 	return fmt.Sprintf(s, scale.String(), ps[0], ps[1], ps[2], ps[3], ps[4], ps[5], ps[6],
-		scale.String(), h.Average(), h.n, elapsedSecs, averageQPS, h.errCnt, h.ErrorPercent())
+		scale.String(), h.Average(), h.n, elapsedSecs, averageQPS, h.errCnt, h.delay, h.SuccessPercent())
 }
